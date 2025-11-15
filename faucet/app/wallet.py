@@ -55,6 +55,7 @@ class FaucetWallet:
             self.address = data.get('address')
             self.created_at = data.get('created_at')
             self.transaction_history = data.get('transaction_history', [])
+            self.initial_balance = data.get('initial_balance', 0.0)
             
             if not self.address:
                 logger.error("Wallet file missing address")
@@ -115,6 +116,7 @@ class FaucetWallet:
             data = {
                 'address': self.address,
                 'created_at': self.created_at,
+                'initial_balance': self.initial_balance,
                 'transaction_history': self.transaction_history[-1000:]  # Keep last 1000
             }
             
@@ -146,25 +148,35 @@ class FaucetWallet:
             if not self.is_loaded():
                 return 0.0
             
-            # Zebra doesn't support listunspent or getbalance for specific addresses
-            # We need to track balance through transaction history
-            # For now, return 0.0 and we'll implement proper tracking when we add funding
-            
-            # TODO M2: Implement proper balance tracking via transaction monitoring
-            logger.debug(f"Balance check for {self.address} - using transaction history")
-            
-            # Calculate from transaction history
-            received = 0.0
+            # Calculate balance from initial funding minus sent transactions
             sent = sum(tx.get('amount', 0.0) for tx in self.transaction_history)
-            
-            # For now, if we have no history, assume 0
-            balance = received - sent
+            balance = self.initial_balance - sent
             
             return max(0.0, balance)  # Never return negative
         
         except Exception as e:
             logger.error(f"Failed to get balance: {e}")
             return 0.0
+    
+    def add_funds(self, amount: float, txid: Optional[str] = None) -> bool:
+        """
+        Add funds to wallet (called when receiving funds)
+        
+        Args:
+            amount: Amount received in ZEC
+            txid: Optional transaction ID
+        
+        Returns:
+            True if successful
+        """
+        try:
+            self.initial_balance += amount
+            logger.info(f"✓ Added {amount} ZEC to wallet. New balance: {self.get_balance()}")
+            self._save_wallet()
+            return True
+        except Exception as e:
+            logger.error(f"Failed to add funds: {e}")
+            return False
     
     def send_funds(
         self,
