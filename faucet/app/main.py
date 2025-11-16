@@ -171,7 +171,9 @@ def create_app(config_name: Optional[str] = None) -> Flask:
                 "ready": "/ready",
                 "live": "/live",
                 "request_funds": "/request (POST)",
-                "stats": "/stats (coming soon)"
+                "faucet_address": "/address (GET)",
+                "stats": "/stats (GET)",
+                "history": "/history (GET)"
             }
         })
     
