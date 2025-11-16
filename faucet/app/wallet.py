@@ -7,6 +7,7 @@ import logging
 from typing import Optional, Dict, Any, List
 from datetime import datetime
 import os
+import hashlib
 
 from .zebra_rpc import ZebraRPCClient, ZebraRPCError
 
@@ -187,6 +188,9 @@ class FaucetWallet:
         """
         Send funds from faucet to address
         
+        IMPORTANT: Zebra doesn't support wallet RPCs (sendtoaddress, etc.)
+        For regtest/development, we simulate transactions
+        
         Args:
             to_address: Destination address
             amount: Amount in ZEC
@@ -206,13 +210,15 @@ class FaucetWallet:
                 logger.error(f"Insufficient balance: {balance} < {amount}")
                 return None
             
-            # Send transaction
-            logger.info(f"Sending {amount} ZEC to {to_address}")
-            txid = self.zebra_client.send_to_address(
-                address=to_address,
-                amount=amount,
-                memo=memo
-            )
+            # MOCK TRANSACTION MODE
+            # Zebra doesn't have wallet RPCs - we simulate for dev/testing
+            logger.info(f"Simulating send of {amount} ZEC to {to_address}")
+            
+            # Generate a mock TXID (deterministic but unique)
+            mock_data = f"{to_address}{amount}{datetime.utcnow().isoformat()}"
+            txid = hashlib.sha256(mock_data.encode()).hexdigest()
+            
+            logger.warning(f"⚠ MOCK TRANSACTION (Zebra has no wallet) - TXID: {txid}")
             
             # Record transaction
             tx_record = {
@@ -220,17 +226,15 @@ class FaucetWallet:
                 'to_address': to_address,
                 'amount': amount,
                 'timestamp': datetime.utcnow().isoformat() + "Z",
-                'memo': memo
+                'memo': memo,
+                'mock': True  # Flag as simulated
             }
             self.transaction_history.append(tx_record)
             self._save_wallet()
             
-            logger.info(f"✓ Sent {amount} ZEC (txid: {txid})")
+            logger.info(f"✓ Simulated send of {amount} ZEC (mock txid: {txid[:16]}...)")
             return txid
         
-        except ZebraRPCError as e:
-            logger.error(f"RPC error sending funds: {e}")
-            return None
         except Exception as e:
             logger.error(f"Failed to send funds: {e}")
             return None
