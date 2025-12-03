@@ -10,24 +10,11 @@
 ## 🚀 Project Status: Milestone 2 - Developer Toolkit
 
 **Current Milestone:** M2 - CLI Tool + Faucet + UA Fixtures  
-**Completion:** ✅ Complete
+**Work in Progress**
 
-### What Works Now (M1 + M2)
-- ✅ **Zebra regtest node** in Docker with health checks
-- ✅ **CLI tool** (`zecdev up/test/down/status`)
-- ✅ **Faucet service** with 1000 ZEC auto-funded
-- ✅ **UA fixtures** for ZIP-316 testing (pre-funded)
-- ✅ **Backend toggle** (lightwalletd/Zaino)
-- ✅ **Smoke tests** (5/5 passing)
-- ✅ **CI pipeline** with self-hosted runner
-- ✅ **Balance tracking** with dual-history accounting
 
-### Coming in Future Milestones
-- ⏳ M3: Real blockchain transactions + GitHub Action + E2E golden flows
-- ⏳ M4: Comprehensive documentation + Video tutorials
-- ⏳ M5: 90-day maintenance window + Community handover
 
----
+
 
 ## 📋 Table of Contents
 
